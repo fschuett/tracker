@@ -66,7 +66,7 @@ public class Tracker {
 
   // define static constants
   /** tracker version and copyright */
-  public static final String VERSION = "5.0.6"; //$NON-NLS-1$
+  public static final String VERSION = "5.1.0alpha"; //$NON-NLS-1$
   public static final String COPYRIGHT = "Copyright (c) 2018 Douglas Brown"; //$NON-NLS-1$
   /** the tracker icon */
   public static final ImageIcon TRACKER_ICON = new ImageIcon(
@@ -169,7 +169,7 @@ public class Tracker {
   static boolean showHintsByDefault = true;
   static int recentFilesSize = 6;
   static int preferredMemorySize = -1;
-  static String lookAndFeel, preferredLocale, preferredDecimalSeparator;
+  static String lookAndFeel, preferredLocale, preferredDecimalSeparator, additionalDecimalSeparators;
   static String preferredJRE, preferredTrackerJar, preferredPointMassFootprint;
   static int checkForUpgradeInterval = 0;
   static int preferredFontLevel = 0, preferredFontLevelPlus = 0;
@@ -610,44 +610,47 @@ public class Tracker {
    * @return 0 if equal, 1 if ver1>ver2, -1 if ver1<ver2
    */
   public static int compareVersions(String ver1, String ver2) {
-  	// deal with null values
-  	if (ver1==null || ver2==null) {
-  		return 0;
-  	}
-  	// typical newer semantic version "4.9.10" or 5.0.0.171230
-  	// typical older version "4.97"
-    String[] v1 = ver1.trim().split("\\."); //$NON-NLS-1$
-    String[] v2 = ver2.trim().split("\\."); //$NON-NLS-1$
-    // beta version arrays have length 4
-    // newer semantic version arrays have length 3
-    // older version arrays have length 2
-    
-    // truncate beta versions to length 3
-    if (v1.length==4) {
-    	v1 = new String[] {v1[0], v1[1], v1[2]};
-    }
-    if (v2.length==4) {
-    	v2 = new String[] {v2[0], v2[1], v2[2]};
-    }
+  	try {
+		// deal with null values
+		if (ver1 == null || ver2 == null) {
+			return 0;
+		}
+		// typical newer semantic version "4.9.10" or 5.0.0.171230
+		// typical older version "4.97"
+		String[] v1 = ver1.trim().split("\\."); //$NON-NLS-1$
+		String[] v2 = ver2.trim().split("\\."); //$NON-NLS-1$
+		// beta version arrays have length 4
+		// newer semantic version arrays have length 3
+		// older version arrays have length 2
 
-  	if (v2.length>v1.length) {
-  		// v1 is older version, v2 is newer
-  		return -1;
-  	}
-  	if (v1.length>v2.length) {
-  		// v2 is older version, v1 is newer
-  		return 1;
-  	}
-  	// both arrays have the same length
-    for (int i=0; i<v1.length; i++) {
-      if (Integer.parseInt(v1[i]) < Integer.parseInt(v2[i])) {
-        return -1;
-      }
-      else if (Integer.parseInt(v1[i]) > Integer.parseInt(v2[i])) {
-        return 1;
-      }
-    }
-  	return 0;  	
+		// truncate beta versions to length 3
+		if (v1.length == 4) {
+			v1 = new String[]{v1[0], v1[1], v1[2]};
+		}
+		if (v2.length == 4) {
+			v2 = new String[]{v2[0], v2[1], v2[2]};
+		}
+
+		if (v2.length > v1.length) {
+			// v1 is older version, v2 is newer
+			return -1;
+		}
+		if (v1.length > v2.length) {
+			// v2 is older version, v1 is newer
+			return 1;
+		}
+		// both arrays have the same length
+		for (int i = 0; i < v1.length; i++) {
+			if (Integer.parseInt(v1[i]) < Integer.parseInt(v2[i])) {
+				return -1;
+			} else if (Integer.parseInt(v1[i]) > Integer.parseInt(v2[i])) {
+				return 1;
+			}
+		}
+		return 0;
+	}catch(Exception e){
+  		return 0;
+	}
   }
   
 
@@ -2106,6 +2109,8 @@ public class Tracker {
       		control.setValue("locale", Tracker.preferredLocale); //$NON-NLS-1$
       	if (Tracker.preferredDecimalSeparator!=null)
       		control.setValue("decimal_separator", Tracker.preferredDecimalSeparator); //$NON-NLS-1$
+		if (Tracker.additionalDecimalSeparators!=null)
+			control.setValue("additional_decimal_separators", Tracker.additionalDecimalSeparators); //$NON-NLS-1$
       	if (Tracker.preferredFontLevel>0) {
       		control.setValue("font_size", Tracker.preferredFontLevel); //$NON-NLS-1$
       	}
@@ -2229,6 +2234,10 @@ public class Tracker {
       		Tracker.preferredDecimalSeparator = control.getString("decimal_separator"); //$NON-NLS-1$
       		OSPRuntime.setPreferredDecimalSeparator(preferredDecimalSeparator);
       	}
+  	    if (control.getPropertyNames().contains("additional_decimal_separators")) { //$NON-NLS-1$
+			Tracker.additionalDecimalSeparators = control.getString("additional_decimal_separators"); //$NON-NLS-1$
+			OSPRuntime.setAdditionalDecimalSeparators(additionalDecimalSeparators);
+	    }
       	if (control.getPropertyNames().contains("run")) //$NON-NLS-1$
       		Tracker.prelaunchExecutables = (String[])control.getObject("run"); //$NON-NLS-1$
       	if (control.getPropertyNames().contains("locale")) //$NON-NLS-1$
